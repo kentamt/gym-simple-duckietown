@@ -1,0 +1,10 @@
+{
+  "name": "loop_8x8",
+  "description": "Large loop track on 8x8 tile grid",
+  "map_config": {
+    "width": 8,
+    "height": 8,
+    "tile_size": 0.61
+  },
+  "track_type": "loop"
+}

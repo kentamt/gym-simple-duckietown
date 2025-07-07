@@ -1,0 +1,10 @@
+{
+  "name": "loop_6x5",
+  "description": "Simple loop track on 6x5 tile grid",
+  "map_config": {
+    "width": 6,
+    "height": 5,
+    "tile_size": 0.61
+  },
+  "track_type": "loop"
+}

@@ -1,0 +1,13 @@
+{
+  "name": "default_duckiebot",
+  "description": "Default Duckiebot configuration based on real hardware specs",
+  "robot_config": {
+    "wheelbase": 0.102,
+    "wheel_radius": 0.0318,
+    "max_wheel_speed": 10.0,
+    "collision_radius": 0.05,
+    "initial_x": 0.0,
+    "initial_y": 0.0,
+    "initial_theta": 0.0
+  }
+}

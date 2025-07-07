@@ -1,0 +1,10 @@
+{
+  "name": "straight_10x5",
+  "description": "Long straight track on 10x5 tile grid",
+  "map_config": {
+    "width": 10,
+    "height": 5,
+    "tile_size": 0.61
+  },
+  "track_type": "straight"
+}

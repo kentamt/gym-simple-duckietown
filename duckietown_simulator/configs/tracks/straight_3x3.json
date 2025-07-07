@@ -1,0 +1,10 @@
+{
+  "name": "straight_3x3",
+  "description": "Minimal straight track on 3x3 tile grid",
+  "map_config": {
+    "width": 3,
+    "height": 3,
+    "tile_size": 0.61
+  },
+  "track_type": "straight"
+}
