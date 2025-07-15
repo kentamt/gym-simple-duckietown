@@ -1,0 +1,25 @@
+{
+  "layout": [
+    [2, 2, 2, 2],
+    [2, 3, 3, 2],
+    [2, 2, 2, 2],
+    [2, 3, 3, 2],
+    [2, 2, 2, 2]
+  ],
+  "tile_types": {
+    "0": "empty",
+    "1": "obstacle", 
+    "2": "road",
+    "3": "grass",
+    "4": "intersection"
+  },
+  "metadata": {
+    "name": "Simple Room",
+    "description": "A simple room with walls forming a rectangular enclosure",
+    "width_tiles": 4,
+    "height_tiles": 5,
+    "tile_size": 0.61,
+    "width_meters": 3.05,
+    "height_meters": 3.05
+  }
+}

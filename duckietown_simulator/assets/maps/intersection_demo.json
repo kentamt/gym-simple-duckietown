@@ -1,0 +1,27 @@
+{
+  "layout": [
+    [3, 3, 2, 2, 2, 3, 3],
+    [3, 3, 2, 2, 2, 3, 3],
+    [2, 2, 4, 4, 4, 2, 2],
+    [2, 2, 4, 4, 4, 2, 2],
+    [2, 2, 4, 4, 4, 2, 2],
+    [3, 3, 2, 2, 2, 3, 3],
+    [3, 3, 2, 2, 2, 3, 3]
+  ],
+  "tile_types": {
+    "0": "empty",
+    "1": "obstacle", 
+    "2": "road",
+    "3": "grass",
+    "4": "intersection"
+  },
+  "metadata": {
+    "name": "Intersection Demo",
+    "description": "A crossroad intersection with roads extending in four directions",
+    "width_tiles": 7,
+    "height_tiles": 7,
+    "tile_size": 0.61,
+    "width_meters": 4.27,
+    "height_meters": 4.27
+  }
+}

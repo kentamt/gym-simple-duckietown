@@ -1,0 +1,104 @@
+{
+  "layout": [
+    [
+      3,
+      10,
+      3,
+      11,
+      11,
+      11,
+      3,
+      10,
+      3
+    ],
+    [
+      20,
+      30,
+      24,
+      3,
+      3,
+      3,
+      20,
+      30,
+      24
+    ],
+    [
+      3,
+      10,
+      3,
+      11,
+      11,
+      11,
+      3,
+      10,
+      3
+    ],
+    [
+      11,
+      11,
+      11,
+      30,
+      10,
+      31,
+      11,
+      11,
+      11
+    ],
+    [
+      3,
+      12,
+      3,
+      11,
+      11,
+      11,
+      3,
+      12,
+      3
+    ],
+    [
+      22,
+      31,
+      26,
+      3,
+      3,
+      3,
+      22,
+      31,
+      26
+    ],
+    [
+      3,
+      12,
+      3,
+      11,
+      11,
+      11,
+      3,
+      12,
+      3
+    ]
+  ],
+  "tile_types": {
+    "0": "empty",
+    "1": "obstacle",
+    "2": "road",
+    "3": "grass",
+    "4": "intersection",
+    "10": "road_straight_vertical",
+    "11": "road_straight_horizontal",
+    "12": "road_straight_vertical",
+    "20": "road_curve_left_0",
+    "22": "road_curve_left_180",
+    "24": "road_curve_right_0",
+    "26": "road_curve_right_180",
+    "30": "road_intersection_0",
+    "31": "road_intersection_90"
+  },
+  "metadata": {
+    "name": "Directional Roads Demo",
+    "description": "Comprehensive demo of all directional road tile types",
+    "width_tiles": 9,
+    "height_tiles": 7,
+    "tile_size": 0.61
+  }
+}

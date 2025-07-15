@@ -23,7 +23,7 @@ class PIDConfig:
     max_linear_velocity: float = 0.5  # m/s
     max_angular_velocity: float = 2.0  # rad/s
     # Tolerance for waypoint reaching
-    position_tolerance: float = 0.1  # meters
+    position_tolerance: float = 0.5  # meters
     heading_tolerance: float = 0.1  # radians
     
     def __post_init__(self):

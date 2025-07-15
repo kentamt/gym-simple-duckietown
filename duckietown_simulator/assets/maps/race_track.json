@@ -1,0 +1,28 @@
+{
+  "layout": [
+    [3, 3, 3, 3, 3, 3, 3, 3],
+    [3, 2, 2, 2, 2, 2, 2, 3],
+    [3, 2, 1, 1, 1, 1, 2, 3],
+    [3, 2, 1, 0, 0, 1, 2, 3],
+    [3, 2, 1, 0, 0, 1, 2, 3],
+    [3, 2, 1, 1, 1, 1, 2, 3],
+    [3, 2, 2, 2, 2, 2, 2, 3],
+    [3, 3, 3, 3, 3, 3, 3, 3]
+  ],
+  "tile_types": {
+    "0": "empty",
+    "1": "obstacle", 
+    "2": "road",
+    "3": "grass",
+    "4": "intersection"
+  },
+  "metadata": {
+    "name": "Race Track",
+    "description": "A simple oval race track with grass borders and obstacles in the center",
+    "width_tiles": 8,
+    "height_tiles": 8,
+    "tile_size": 0.61,
+    "width_meters": 4.88,
+    "height_meters": 4.88
+  }
+}

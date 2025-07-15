@@ -1,4 +1,6 @@
 import numpy as np
+import json
+import os
 from typing import Tuple, List, Optional, Dict, Any
 from dataclasses import dataclass
 
@@ -172,7 +174,7 @@ class Map:
     def create_loop_track(self):
         """Create a simple loop track layout."""
         # Start with all obstacles
-        self.tiles.fill(1)
+        self.tiles.fill(3)
         
         # Create a simple rectangular loop
         if self.width_tiles >= 3 and self.height_tiles >= 3:
@@ -183,6 +185,95 @@ class Map:
                     if (row == 1 or row == self.height_tiles - 2 or 
                         col == 1 or col == self.width_tiles - 2):
                         self.tiles[row, col] = 2  # Road
+    
+    def load_layout_from_array(self, layout: List[List[int]]):
+        """
+        Load map layout from a 2D array.
+        
+        Args:
+            layout: 2D array where each number corresponds to a tile type
+                   Example: [[0,0,0,0,0],[0,1,1,1,0],[0,1,0,1,0],[0,1,1,1,0],[0,0,0,0,0]]
+        """
+        if not layout:
+            raise ValueError("Layout cannot be empty")
+        
+        # Check if dimensions match
+        array_height = len(layout)
+        array_width = len(layout[0]) if layout else 0
+        
+        if array_height != self.height_tiles or array_width != self.width_tiles:
+            raise ValueError(f"Layout dimensions {array_width}x{array_height} don't match map dimensions {self.width_tiles}x{self.height_tiles}")
+        
+        # Validate all rows have the same length
+        for i, row in enumerate(layout):
+            if len(row) != array_width:
+                raise ValueError(f"Row {i} has length {len(row)}, expected {array_width}")
+        
+        # Load the layout
+        self.tiles = np.array(layout, dtype=int)
+        print(f"Loaded map layout: {array_width}x{array_height} tiles")
+    
+    def save_layout_to_file(self, filename: str, include_metadata: bool = True):
+        """
+        Save current map layout to a JSON file.
+        
+        Args:
+            filename: Path to save the layout file
+            include_metadata: Whether to include map metadata in the file
+        """
+        layout_data = {
+            "layout": self.tiles.tolist(),
+            "tile_types": {
+                "0": "empty",
+                "1": "obstacle", 
+                "2": "road",
+                "3": "grass",
+                "4": "intersection"
+            }
+        }
+        
+        if include_metadata:
+            layout_data["metadata"] = {
+                "width_tiles": self.width_tiles,
+                "height_tiles": self.height_tiles,
+                "tile_size": self.tile_size,
+                "width_meters": self.width_meters,
+                "height_meters": self.height_meters
+            }
+        
+        with open(filename, 'w') as f:
+            json.dump(layout_data, f, indent=2)
+        
+        print(f"Saved map layout to {filename}")
+    
+    def load_layout_from_file(self, filename: str):
+        """
+        Load map layout from a JSON file.
+        
+        Args:
+            filename: Path to the layout file
+        """
+        if not os.path.exists(filename):
+            raise FileNotFoundError(f"Layout file not found: {filename}")
+        
+        with open(filename, 'r') as f:
+            layout_data = json.load(f)
+        
+        if "layout" not in layout_data:
+            raise ValueError("Layout file must contain 'layout' key")
+        
+        layout = layout_data["layout"]
+        
+        # Validate and load the layout
+        self.load_layout_from_array(layout)
+        
+        # Print tile type information if available
+        if "tile_types" in layout_data:
+            print("Tile types:")
+            for type_id, name in layout_data["tile_types"].items():
+                print(f"  {type_id}: {name}")
+        
+        print(f"Loaded map layout from {filename}")
     
     def __str__(self) -> str:
         """String representation of the map."""
@@ -225,5 +316,66 @@ def create_map_from_config(width: int, height: int, track_type: str = "straight"
         map_instance.create_loop_track()
     else:
         raise ValueError(f"Unknown track type: {track_type}")
+    
+    return map_instance
+
+
+def create_map_from_array(layout: List[List[int]], tile_size: float = 0.61) -> Map:
+    """
+    Factory function to create a map from a 2D array layout.
+    
+    Args:
+        layout: 2D array where each number corresponds to a tile type
+               Example: [[0,0,0,0,0],[0,1,1,1,0],[0,1,0,1,0],[0,1,1,1,0],[0,0,0,0,0]]
+        tile_size: Size of each tile in meters
+        
+    Returns:
+        Map instance with loaded layout
+    """
+    if not layout:
+        raise ValueError("Layout cannot be empty")
+    
+    height = len(layout)
+    width = len(layout[0]) if layout else 0
+    
+    config = MapConfig(width=width, height=height, tile_size=tile_size)
+    map_instance = Map(config)
+    map_instance.load_layout_from_array(layout)
+    
+    return map_instance
+
+
+def create_map_from_file(filename: str, tile_size: float = 0.61) -> Map:
+    """
+    Factory function to create a map from a JSON layout file.
+    
+    Args:
+        filename: Path to the JSON layout file
+        tile_size: Size of each tile in meters (can be overridden by file metadata)
+        
+    Returns:
+        Map instance with loaded layout
+    """
+    if not os.path.exists(filename):
+        raise FileNotFoundError(f"Layout file not found: {filename}")
+    
+    with open(filename, 'r') as f:
+        layout_data = json.load(f)
+    
+    if "layout" not in layout_data:
+        raise ValueError("Layout file must contain 'layout' key")
+    
+    layout = layout_data["layout"]
+    
+    # Check if file contains metadata with tile size
+    if "metadata" in layout_data and "tile_size" in layout_data["metadata"]:
+        tile_size = layout_data["metadata"]["tile_size"]
+    
+    height = len(layout)
+    width = len(layout[0]) if layout else 0
+    
+    config = MapConfig(width=width, height=height, tile_size=tile_size)
+    map_instance = Map(config)
+    map_instance.load_layout_from_file(filename)
     
     return map_instance
