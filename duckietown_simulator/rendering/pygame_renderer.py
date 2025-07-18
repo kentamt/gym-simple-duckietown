@@ -136,6 +136,10 @@ class PygameRenderer:
         self.show_trajectories = True
         self.show_planned_trajectories = True
         
+        # Waypoint visualization
+        self.current_waypoint: Optional[Tuple[float, float]] = None
+        self.show_waypoint = True
+        
         # Load robot image
         self.robot_image = None
         self.robot_image_scaled = {}  # Cache for scaled versions
@@ -185,6 +189,10 @@ class PygameRenderer:
     def set_collision_results(self, collision_results: List[CollisionResult]):
         """Set collision results to visualize."""
         self.collision_results = collision_results
+    
+    def set_current_waypoint(self, waypoint: Tuple[float, float]):
+        """Set the current waypoint target for visualization."""
+        self.current_waypoint = waypoint
     
     def update_trajectories(self):
         """Update robot trajectories."""
@@ -237,6 +245,10 @@ class PygameRenderer:
                     # Toggle planned trajectory display
                     self.show_planned_trajectories = not self.show_planned_trajectories
                     print(f"Planned trajectories: {'ON' if self.show_planned_trajectories else 'OFF'}")
+                elif event.key == pygame.K_w:
+                    # Toggle waypoint display
+                    self.show_waypoint = not self.show_waypoint
+                    print(f"Waypoint display: {'ON' if self.show_waypoint else 'OFF'}")
                 elif event.key == pygame.K_EQUALS or event.key == pygame.K_PLUS or event.key == pygame.K_KP_PLUS:
                     # Zoom in with =, +, or keypad + key
                     zoom_factor = 1.5
@@ -448,8 +460,8 @@ class PygameRenderer:
                 for point in visible_points:
                     if (0 <= point[0] <= self.config.width and 
                         0 <= point[1] <= self.config.height):
-                        pygame.draw.circle(self.screen, planned_color, point, 6)
-                        pygame.draw.circle(self.screen, Colors.WHITE, point, 6, 2)
+                        pygame.draw.circle(self.screen, planned_color, point, 2)
+                        # pygame.draw.circle(self.screen, Colors.WHITE, point, 2, 2)
                 
                 # Draw start and end markers
                 if visible_points:
@@ -462,6 +474,37 @@ class PygameRenderer:
                     end_point = visible_points[-1]
                     pygame.draw.circle(self.screen, Colors.RED, end_point, 8)
                     pygame.draw.circle(self.screen, Colors.WHITE, end_point, 8, 2)
+    
+    def draw_current_waypoint(self):
+        """Draw the current waypoint target."""
+        if not self.show_waypoint or self.current_waypoint is None:
+            return
+        
+        # Convert waypoint to screen coordinates
+        screen_x, screen_y = self.world_to_screen(self.current_waypoint[0], self.current_waypoint[1])
+        
+        # Check if waypoint is on screen
+        if not (0 <= screen_x <= self.config.width and 0 <= screen_y <= self.config.height):
+            return
+        
+        # Draw waypoint as a large circle with cross
+        waypoint_color = Colors.YELLOW
+        center = (int(screen_x), int(screen_y))
+        
+        # Draw outer circle (target ring)
+        # pygame.draw.circle(self.screen, waypoint_color, center, 15, 3)
+        
+        # Draw inner circle (filled)
+        # pygame.draw.circle(self.screen, waypoint_color, center, 5)
+        
+        # Draw cross inside
+        cross_size = 10
+        pygame.draw.line(self.screen, Colors.RED,
+                        (center[0] - cross_size, center[1]), 
+                        (center[0] + cross_size, center[1]), 2)
+        pygame.draw.line(self.screen, Colors.RED,
+                        (center[0], center[1] - cross_size), 
+                        (center[0], center[1] + cross_size), 2)
     
     def draw_robots(self):
         """Draw robots."""
@@ -625,6 +668,7 @@ class PygameRenderer:
             "R: Reset Camera",
             "T: Toggle Trajectories",
             "P: Toggle Planned Paths",
+            "W: Toggle Waypoints",
             "C: Clear Trajectories",
             "G: Toggle Grid",
             "I: Toggle Images/Colors",
@@ -682,6 +726,9 @@ class PygameRenderer:
         
         # Draw trajectories
         self.draw_trajectories()
+        
+        # Draw current waypoint target
+        self.draw_current_waypoint()
         
         # Draw robots
         self.draw_robots()

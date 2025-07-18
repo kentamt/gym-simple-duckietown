@@ -68,14 +68,6 @@ def demo_discrete_actions():
         (DiscreteAction.FORWARD, "Move forward"),
         (DiscreteAction.FORWARD, "Move forward"),
         (DiscreteAction.FORWARD, "Move forward"),
-        (DiscreteAction.STOP, "Stop"),
-        (DiscreteAction.STOP, "Stop"),
-        (DiscreteAction.STOP, "Stop"),
-        (DiscreteAction.STOP, "Stop"),
-        (DiscreteAction.STOP, "Stop"),
-        (DiscreteAction.STOP, "Stop"),
-        (DiscreteAction.STOP, "Stop"),
-        (DiscreteAction.STOP, "Stop"),
         (DiscreteAction.TURN_LEFT, "Turn left 90°"),
         (DiscreteAction.TURN_LEFT, "Turn left 90°"),
     ]
@@ -123,7 +115,7 @@ def demo_discrete_actions():
                 break
             
             # Small delay for visualization
-            # time.sleep(0.1)
+            time.sleep(1./30.)
             
     except KeyboardInterrupt:
         print("\nDemo stopped by user")

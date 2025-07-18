@@ -1,18 +1,11 @@
 {
   "layout": [
-    [2, 2, 2, 2],
-    [2, 3, 3, 2],
-    [2, 2, 2, 2],
-    [2, 3, 3, 2],
-    [2, 2, 2, 2]
+    [9, 2, 2, 8],
+    [3, 0, 0, 3],
+    [14, 2, 2, 12],
+    [3, 0, 0, 3],
+    [7, 2, 2, 4]
   ],
-  "tile_types": {
-    "0": "empty",
-    "1": "obstacle", 
-    "2": "road",
-    "3": "grass",
-    "4": "intersection"
-  },
   "metadata": {
     "name": "Simple Room",
     "description": "A simple room with walls forming a rectangular enclosure",

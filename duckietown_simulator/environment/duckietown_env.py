@@ -2,22 +2,43 @@ import numpy as np
 from typing import Tuple, Dict, Any, Optional, Union
 import warnings
 
-# Simple spaces implementation for gym compatibility
-class Box:
-    def __init__(self, low, high, shape=None, dtype=np.float32):
-        self.low = np.array(low, dtype=dtype)
-        self.high = np.array(high, dtype=dtype)
-        self.shape = shape or self.low.shape
-        self.dtype = dtype
-    
-    def sample(self):
-        return np.random.uniform(self.low, self.high, size=self.shape)
-    
-    def contains(self, x):
-        return np.all(x >= self.low) and np.all(x <= self.high)
+# Try to import gymnasium, fall back to simple spaces
+try:
+    import gymnasium as gym
+    from gymnasium import spaces
+    GYM_AVAILABLE = True
+except ImportError:
+    GYM_AVAILABLE = False
+    # Simple spaces implementation for gym compatibility
+    class Box:
+        def __init__(self, low, high, shape=None, dtype=np.float32):
+            self.low = np.array(low, dtype=dtype)
+            self.high = np.array(high, dtype=dtype)
+            self.shape = shape or self.low.shape
+            self.dtype = dtype
+        
+        def sample(self):
+            return np.random.uniform(self.low, self.high, size=self.shape)
+        
+        def contains(self, x):
+            return np.all(x >= self.low) and np.all(x <= self.high)
 
-class spaces:
-    Box = Box
+    class spaces:
+        Box = Box
+    
+    # Mock gym.Env for compatibility
+    class Env:
+        def step(self, action):
+            raise NotImplementedError
+        def reset(self):
+            raise NotImplementedError
+        def render(self):
+            pass
+        def close(self):
+            pass
+    
+    class gym:
+        Env = Env
 
 from ..robot.duckiebot import Duckiebot, RobotConfig, create_duckiebot
 from ..world.map import Map, MapConfig, create_map_from_array, create_map_from_file
@@ -32,7 +53,7 @@ except ImportError:
     from ..rendering.simple_renderer import create_fallback_renderer
 
 
-class DuckietownEnv:
+class DuckietownEnv(gym.Env):
     """
     OpenAI Gym environment for Duckietown simulation.
     
@@ -78,7 +99,8 @@ class DuckietownEnv:
         
         # Initialize robot
         self._setup_robot(robot_config)
-        
+
+
         # Initialize collision detector
         self.collision_detector = CollisionDetector(
             map_width=self.map.width_meters,
@@ -160,9 +182,9 @@ class DuckietownEnv:
         """Setup the renderer for visualization."""
         if PYGAME_AVAILABLE:
             render_config = RenderConfig(
-                width=800,
-                height=600,
-                fps=30,
+                width=600,
+                height=850,
+                fps=120,
                 show_grid=True,
                 show_coordinates=True,
                 show_collision_circles=True,
