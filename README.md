@@ -1,5 +1,9 @@
 # Simple Duckietown Simulator for MARL 
 
+<img src="./data/duckie_demo.gif" width="200">
+<img src="./data/traj_editor.gif" width="200">
+
+
 A comprehensive simulation environment for autonomous robots in Duckietown, featuring trajectory editing, PID control, collision detection, and both single-agent and multi-agent reinforcement learning environments.
 
 ## Features
