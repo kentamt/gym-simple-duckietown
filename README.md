@@ -1,4 +1,4 @@
-# Duckietown Simulator with TSL (Trajectory Specification Language)
+# Simple Duckietown Simulator for MARL 
 
 A comprehensive simulation environment for autonomous robots in Duckietown, featuring trajectory editing, PID control, collision detection, and both single-agent and multi-agent reinforcement learning environments.
 
