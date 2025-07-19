@@ -1,4 +1,5 @@
 # Duckietown RL Simulator
+<img src="https://github.com/user-attachments/assets/604a2b0e-075c-4f9f-9b53-31a30e5fa219" width="500" />
 
 A simplified 2D simulator for training reinforcement learning models on Duckietown navigation tasks. This simulator focuses on waypoint-based navigation and differential drive control, removing the complexity of 3D rendering and computer vision found in existing solutions.
 
