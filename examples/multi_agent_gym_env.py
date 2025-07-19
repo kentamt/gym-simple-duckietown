@@ -33,8 +33,9 @@ from duckietown_simulator.rendering.pygame_renderer import create_pygame_rendere
 from duckietown_simulator.world.collision_detection import CollisionDetector, CollisionResult
 from duckietown_simulator.world.obstacles import ObstacleConfig, ObstacleType
 
-# Import trajectory utilities from the main demo
-from demo_pid_road_network import (
+# Import trajectory utilities from the demos directory
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from demos.demo_pid_road_network import (
     load_trajectory_from_file, create_robot_trajectories, create_road_network_map,
     interpolate_trajectory
 )

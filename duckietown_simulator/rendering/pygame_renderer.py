@@ -693,7 +693,7 @@ class PygameRenderer:
             text_rect = text.get_rect(center=(self.config.width // 2, 50))
             self.screen.blit(text, text_rect)
     
-    def render(self) -> bool:
+    def render(self, flip=True) -> bool:
         """
         Render one frame.
         
@@ -738,8 +738,9 @@ class PygameRenderer:
         self.draw_ui()
         
         # Update display
-        pygame.display.flip()
-        self.clock.tick(self.config.fps)
+        if flip:
+            pygame.display.flip()
+            self.clock.tick(self.config.fps)
         
         self.frame_count += 1
         return True

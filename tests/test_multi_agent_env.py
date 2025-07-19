@@ -6,7 +6,12 @@ Demonstrates multi-agent discrete action space {STOP, GO}.
 
 import numpy as np
 import time
-from multi_agent_gym_env import make_multi_agent_env
+import sys
+import os
+
+# Add parent directory to path to import from examples
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from examples.multi_agent_gym_env import make_multi_agent_env
 
 
 def test_multi_agent_basic():
@@ -17,10 +22,10 @@ def test_multi_agent_basic():
     # Create environment with 2 agents
     env = make_multi_agent_env(
         num_agents=3,
-        trajectory_files=["trajectory_1.json",
-                          "trajectory_2.json",
-                          "trajectory_3.json",
-                          ],  # Only one file, will be duplicated/offset
+        trajectory_files=["../data/exp_traj_1.json",
+                          "../data/exp_traj_2.json",
+                          "../data/exp_traj_3.json",
+                          ],  # Trajectory files from data directory
         render_mode='human'  # Use human rendering for visualization
     )
     
@@ -100,7 +105,7 @@ def test_collision_scenarios():
     # Create environment with 3 agents using different trajectories
     env = make_multi_agent_env(
         num_agents=3,
-        trajectory_files={"robot1": "trajectory_1.json", "robot2": "trajectory_2.json"},
+        trajectory_files={"robot1": "data/trajectory_1.json", "robot2": "data/trajectory_2.json"},
         render_mode=None
     )
     

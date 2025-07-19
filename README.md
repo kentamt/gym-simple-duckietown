@@ -1,197 +1,342 @@
-# Duckietown RL Simulator
-<img src="https://github.com/user-attachments/assets/604a2b0e-075c-4f9f-9b53-31a30e5fa219" width="500" />
+# Duckietown Simulator with TSL (Trajectory Specification Language)
 
-A simplified 2D simulator for training reinforcement learning models on Duckietown navigation tasks. This simulator focuses on waypoint-based navigation and differential drive control, removing the complexity of 3D rendering and computer vision found in existing solutions.
+A comprehensive simulation environment for autonomous robots in Duckietown, featuring trajectory editing, PID control, collision detection, and both single-agent and multi-agent reinforcement learning environments.
 
 ## Features
 
-- **Simplified Physics**: 2D top-down simulation with differential drive kinematics
-- **Waypoint Navigation**: Robots detect and follow waypoints instead of lane detection
-- **RL-Ready**: OpenAI Gym compatible environment for easy integration with RL frameworks
-- **Configurable**: Flexible track layouts, robot parameters, and reward functions
-- **Lightweight**: Fast simulation suitable for training at scale
-
-## Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/duckietown-rl-simulator.git
-cd duckietown-rl-simulator
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Install the package in development mode
-pip install -e .
-```
+- **🎯 Interactive Trajectory Editor**: GUI-based waypoint creation and editing using mouse input
+- **🤖 PID Controller**: Robust trajectory following with collision detection and speed visualization
+- **🎮 Gym Environments**: OpenAI Gym/Gymnasium compatible environments for RL training
+- **👥 Multi-Agent Support**: Multi-robot environments with collision avoidance
+- **🔧 Discrete Action Space**: Simple {STOP, GO} action space for easy learning
+- **📊 Real-time Visualization**: Pygame-based rendering with comprehensive overlays
 
 ## Quick Start
 
+### Installation
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd gym-tsl-duckie
+
+# Install dependencies
+pip install numpy pygame gymnasium pillow
+```
+
+### Main Interface
+
+Use the unified main entry point to access all functionality:
+
+```bash
+# Launch trajectory editor
+python main.py trajectory-editor
+
+# Run PID demo with collision detection
+python main.py pid-demo
+
+# Run single-agent gym environment
+python main.py single-gym
+
+# Run multi-agent gym environment
+python main.py multi-gym
+
+# Run all tests
+python main.py test
+
+# List available trajectory files
+python main.py list-trajectories
+```
+
+## Repository Structure
+
+```
+gym-tsl-duckie/
+├── main.py                 # Main entry point
+├── examples/               # Gym environment examples
+│   ├── gym_pid_road_network.py      # Single-agent gym env
+│   ├── multi_agent_gym_env.py       # Multi-agent gym env
+│   └── example_gym_usage.py         # Basic usage examples
+├── demos/                  # Interactive demonstrations
+│   ├── demo_pid_road_network.py     # PID controller demo
+│   ├── demo_discrete_actions.py     # Discrete action demo
+│   └── demo_*.py                    # Other demo scripts
+├── tests/                  # Test suite
+│   ├── test_multi_agent_env.py      # Multi-agent tests
+│   ├── test_gym_env.py              # Single-agent tests
+│   ├── test_duckiebot.py            # Robot tests
+│   ├── test_collision_detection.py  # Collision tests
+│   └── test_map.py                  # Map tests
+├── tools/                  # Utility tools
+│   ├── trajectory_editor.py         # GUI trajectory editor
+│   └── *.py                         # Debug and utility scripts
+├── data/                   # Data files
+│   ├── trajectory_*.json            # Trajectory files
+│   └── *.png                        # Visualization images
+├── duckietown_simulator/   # Core simulator package
+│   ├── environment/                 # Environment definitions
+│   ├── robot/                       # Robot models and controllers
+│   ├── rendering/                   # Visualization components
+│   ├── world/                       # Map and collision systems
+│   └── utils/                       # Utility functions
+└── docs/                   # Documentation
+```
+
+## Core Components
+
+### 1. Trajectory Editor
+Interactive GUI for creating and editing robot trajectories:
+
 ```python
-import gym
-from duckietown_simulator import DuckietownEnv
+# Launch the trajectory editor
+python tools/trajectory_editor.py
 
-# Create environment
-env = DuckietownEnv(
-    track_layout="straight",
-    max_episode_steps=1000,
-    render_mode="human"
-)
+# Features:
+# - Mouse-based waypoint creation
+# - Three modes: View, Edit, Delete (TAB to switch)
+# - Save/load trajectories to JSON
+# - Real-time visualization
+```
 
-# Reset environment
-obs = env.reset()
+### 2. Single-Agent Gym Environment
+OpenAI Gym environment for single robot training:
 
-# Run simulation
+```python
+from examples.gym_pid_road_network import make_env
+
+env = make_env(trajectory_file="data/trajectory_1.json", render_mode="human")
+obs, info = env.reset()
+
 for step in range(1000):
-    # Random action: [left_wheel_speed, right_wheel_speed]
-    action = env.action_space.sample()
-    obs, reward, done, info = env.step(action)
-    
-    if done:
-        obs = env.reset()
-        
+    action = 1 if step % 2 == 0 else 0  # Alternate STOP/GO
+    obs, reward, terminated, truncated, info = env.step(action)
+    env.render()
+    if terminated or truncated:
+        break
+
 env.close()
 ```
 
-## Environment Specifications
+**Action Space**: `Discrete(2)` - {0: STOP, 1: GO}
+**Observation Space**: `[x, y, theta, v_linear, v_angular, dist_to_waypoint, collision, progress]`
 
-### Observation Space
-- **Waypoints**: Relative positions and orientations of detected waypoints
-- **Robot State**: Current velocity, orientation, and position relative to track
-- **Proximity**: Distance to boundaries and obstacles
-- **Progress**: Metrics for goal-directed navigation
+### 3. Multi-Agent Gym Environment
+Multi-robot environment with coordinated action spaces:
 
-### Action Space
-- **Continuous Control**: `[left_wheel_speed, right_wheel_speed]`
-- **Range**: `[-max_speed, max_speed]` for each wheel
-- **Units**: Radians per second
+```python
+from examples.multi_agent_gym_env import make_multi_agent_env
 
-### Reward Function
-- **Progress**: +1.0 for reaching waypoints in sequence
-- **Lane Keeping**: -0.1 per step for deviation from centerline
-- **Collision**: -10.0 for hitting boundaries or obstacles
-- **Efficiency**: Small penalty for excessive speed changes
+env = make_multi_agent_env(
+    num_agents=3,
+    trajectory_files=["data/trajectory_1.json", "data/trajectory_2.json"],
+    render_mode="human"
+)
+
+obs, infos = env.reset()
+
+for step in range(1000):
+    # Actions for each agent
+    actions = {
+        "robot1": 1,  # GO
+        "robot2": 0,  # STOP
+        "robot3": 1   # GO
+    }
+    
+    obs, rewards, terminated, truncated, infos = env.step(actions)
+    env.render()
+    
+    if any(terminated.values()) or any(truncated.values()):
+        break
+
+env.close()
+```
+
+**Action Space**: `Dict` of `Discrete(2)` for each agent
+**Observation Space**: Own state + other agents' positions and collision status
+
+### 4. PID Controller Demo
+Comprehensive demonstration with collision detection:
+
+```python
+# Run the demo
+python demos/demo_pid_road_network.py
+
+# Features:
+# - Trajectory following with PID control
+# - Real-time collision detection
+# - Speed and progress visualization
+# - Waypoint interpolation
+# - Interactive controls
+```
+
+## Key Features
+
+### Collision Detection
+- **Robot-Robot Collisions**: Multi-agent collision detection
+- **Robot-Obstacle Collisions**: Static obstacle avoidance
+- **Boundary Collisions**: Map boundary detection
+- **Real-time Visualization**: Visual collision feedback
+
+### Trajectory System
+- **Waypoint-based**: Define paths using waypoints
+- **Interpolation**: Smooth trajectory interpolation
+- **Multiple Formats**: Support for various trajectory types
+- **Dynamic Loading**: Runtime trajectory switching
+
+### Visualization
+- **Pygame Rendering**: Real-time 2D visualization
+- **Speed Overlays**: Robot speed and status information
+- **Progress Tracking**: Trajectory completion progress
+- **Collision Indicators**: Visual collision feedback
 
 ## Configuration
 
-### Track Layouts
-- `straight`: Simple straight track with waypoints
-- `curve`: S-curve track for testing turning behavior
-- `intersection`: T-junction with multiple path options
-- `loop`: Closed circuit for continuous navigation
-- `custom`: Load custom track from configuration file
-
-### Robot Parameters
+### Robot Configuration
 ```python
-robot_config = {
-    "wheelbase": 0.1,           # Distance between wheels (meters)
-    "max_wheel_speed": 10.0,    # Maximum wheel speed (rad/s)
-    "waypoint_detection_range": 2.0,  # Detection radius (meters)
-    "collision_radius": 0.05    # Robot collision radius (meters)
-}
+from duckietown_simulator.robot.duckiebot import RobotConfig
+
+config = RobotConfig(
+    wheelbase=0.102,           # Distance between wheels (m)
+    wheel_radius=0.0318,       # Wheel radius (m)
+    max_wheel_speed=10.0,      # Maximum wheel speed (rad/s)
+    collision_radius=0.05      # Robot collision radius (m)
+)
 ```
 
-### Environment Parameters
+### PID Configuration
 ```python
-env_config = {
-    "track_layout": "straight",
-    "max_episode_steps": 1000,
-    "render_mode": "human",     # "human", "rgb_array", or None
-    "reward_function": "default",
-    "random_start": True,
-    "noise_level": 0.0          # Sensor noise (0.0 = perfect)
-}
+from duckietown_simulator.robot.pid_controller import PIDConfig, PIDGains
+
+pid_config = PIDConfig(
+    distance_gains=PIDGains(kp=0.5, ki=0.0, kd=0.0),
+    heading_gains=PIDGains(kp=1.5, ki=0.0, kd=0.0),
+    max_linear_velocity=2.5,
+    max_angular_velocity=4.0,
+    position_tolerance=0.10
+)
 ```
 
-## Project Structure
+## Examples
 
-```
-duckietown_simulator/
-├── environment/
-│   ├── __init__.py
-│   ├── duckietown_env.py      # Main gym environment
-│   └── reward_functions.py    # Reward computation
-├── world/
-│   ├── __init__.py
-│   ├── map.py                 # Track layout and boundaries
-│   ├── waypoints.py           # Waypoint network management
-│   └── obstacles.py           # Static obstacles
-├── robot/
-│   ├── __init__.py
-│   ├── duckiebot.py           # Robot dynamics and state
-│   ├── kinematics.py          # Differential drive model
-│   └── sensors.py             # Waypoint detection logic
-├── rendering/
-│   ├── __init__.py
-│   ├── visualizer.py          # 2D visualization
-│   └── matplotlib_renderer.py
-├── utils/
-│   ├── __init__.py
-│   ├── geometry.py            # Collision detection, transformations
-│   └── config.py              # Configuration management
-└── configs/
-    ├── tracks/                # Track layout definitions
-    ├── robots/                # Robot parameter presets
-    └── environments/          # Environment configurations
-```
-
-## Training Examples
-
-### Basic PPO Training
-```python
-from stable_baselines3 import PPO
-from duckietown_simulator import DuckietownEnv
-
-env = DuckietownEnv(track_layout="straight")
-model = PPO("MlpPolicy", env, verbose=1)
-model.learn(total_timesteps=100000)
-model.save("duckiebot_navigation")
-```
-
-### Custom Training Loop
+### Basic Single-Agent Training
 ```python
 import numpy as np
-from duckietown_simulator import DuckietownEnv
+from examples.gym_pid_road_network import make_env
 
-env = DuckietownEnv(track_layout="curve")
-obs = env.reset()
+env = make_env("data/trajectory_1.json", render_mode="human")
+obs, info = env.reset()
 
-for episode in range(1000):
-    done = False
-    total_reward = 0
+# Simple policy: Random actions with bias toward GO
+for step in range(500):
+    action = np.random.choice([0, 1], p=[0.2, 0.8])  # 80% GO, 20% STOP
+    obs, reward, terminated, truncated, info = env.step(action)
     
-    while not done:
-        # Your RL algorithm here
-        action = your_policy(obs)
-        obs, reward, done, info = env.step(action)
-        total_reward += reward
+    if step % 50 == 0:
+        print(f"Step {step}: Reward={reward:.2f}, Progress={info['waypoint_progress']['progress_ratio']*100:.1f}%")
     
-    print(f"Episode {episode}: Reward = {total_reward}")
-    obs = env.reset()
+    if terminated or truncated:
+        print("Episode completed!")
+        break
+
+env.close()
 ```
 
-## Evaluation Metrics
+### Multi-Agent Coordination
+```python
+from examples.multi_agent_gym_env import make_multi_agent_env
 
-- **Success Rate**: Percentage of episodes reaching the goal
-- **Collision Rate**: Percentage of episodes ending in collision
-- **Path Efficiency**: Ratio of optimal path length to actual path length
-- **Lane Deviation**: Average distance from track centerline
-- **Completion Time**: Steps required to reach goal
+env = make_multi_agent_env(num_agents=2, render_mode="human")
+obs, infos = env.reset()
 
-## Extending the Simulator
+# Coordinated policy: Robots take turns
+for step in range(300):
+    if step < 100:
+        actions = {"robot1": 1, "robot2": 1}  # Both GO
+    elif step < 200:
+        actions = {"robot1": 0, "robot2": 1}  # robot1 STOP, robot2 GO
+    else:
+        actions = {"robot1": 1, "robot2": 0}  # robot1 GO, robot2 STOP
+    
+    obs, rewards, terminated, truncated, infos = env.step(actions)
+    
+    if step % 50 == 0:
+        for agent_id in env.agent_ids:
+            print(f"{agent_id}: Reward={rewards[agent_id]:.2f}, Collisions={infos[agent_id]['collisions']}")
 
-### Adding New Track Layouts
-1. Create track definition in `configs/tracks/`
-2. Define waypoint network and boundaries
-3. Register in `world/map.py`
+env.close()
+```
 
-### Custom Reward Functions
-1. Implement reward function in `environment/reward_functions.py`
-2. Register in environment configuration
-3. Use via `reward_function` parameter
+## Testing
 
-### Advanced Robot Models
-1. Extend `robot/duckiebot.py` with additional dynamics
-2. Modify observation space in `environment/duckietown_env.py`
-3. Update kinematics in `robot/kinematics.py`
+Run the test suite to verify functionality:
 
+```bash
+# Run all tests
+python main.py test
+
+# Run specific tests
+python tests/test_multi_agent_env.py
+python tests/test_gym_env.py
+python tests/test_collision_detection.py
+```
+
+## Development
+
+### Adding New Trajectories
+1. Use the trajectory editor: `python main.py trajectory-editor`
+2. Create waypoints by clicking on the map
+3. Save the trajectory to `data/` directory
+4. Use in environments by specifying the file path
+
+### Custom Environments
+Extend the base environments for custom scenarios:
+
+```python
+from examples.gym_pid_road_network import PIDRoadNetworkEnv
+
+class CustomEnv(PIDRoadNetworkEnv):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Custom initialization
+    
+    def _calculate_reward(self, action):
+        # Custom reward function
+        reward = super()._calculate_reward(action)
+        # Add custom reward components
+        return reward
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Import Errors**: Ensure all dependencies are installed and paths are correct
+2. **Pygame Window Issues**: Make sure display is available for rendering
+3. **Trajectory File Not Found**: Check file paths in `data/` directory
+4. **Performance Issues**: Reduce rendering FPS or disable visualization
+
+### Debug Mode
+Enable debug logging for troubleshooting:
+
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Ensure all tests pass
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Duckietown project for inspiration and assets
+- OpenAI Gym for the environment interface
+- Pygame community for visualization tools

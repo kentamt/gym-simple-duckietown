@@ -11,7 +11,7 @@ class RobotConfig:
     wheelbase: float = 0.102  # Distance between wheels (m)
     wheel_radius: float = 0.0318  # Wheel radius (m)
     max_wheel_speed: float = 10.0  # Maximum wheel speed (rad/s)
-    collision_radius: float = 0.05  # Robot collision radius (m)
+    collision_radius: float = 0.10  # Robot collision radius (m)
     initial_x: float = 0.0  # Initial x position (m)
     initial_y: float = 0.0  # Initial y position (m)
     initial_theta: float = 0.0  # Initial orientation (rad)

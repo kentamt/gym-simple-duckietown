@@ -120,9 +120,9 @@ class TrajectoryEditor:
             self.current_trajectory.clear()
             self.selected_waypoint_idx = None
             print("Cleared trajectory")
-        elif key == pygame.K_s and pygame.key.get_pressed()[pygame.K_LCTRL]:
+        elif key == pygame.K_s: #  and pygame.key.get_pressed()[pygame.K_LCTRL]:
             self._save_trajectory()
-        elif key == pygame.K_o and pygame.key.get_pressed()[pygame.K_LCTRL]:
+        elif key == pygame.K_o: #  and pygame.key.get_pressed()[pygame.K_LCTRL]:
             self._load_trajectory()
         elif key == pygame.K_u and self.current_trajectory:
             # Undo last waypoint
@@ -257,8 +257,8 @@ class TrajectoryEditor:
                 "Drag - Move waypoint (Edit mode)",
                 "C - Clear trajectory",
                 "U - Undo last waypoint",
-                "Ctrl+S - Save trajectory",
-                "Ctrl+O - Load trajectory",
+                "S - Save trajectory",
+                "O - Load trajectory",
                 "H - Toggle help",
                 "ESC - Exit"
             ]
@@ -315,7 +315,7 @@ def main():
     """Demo of the trajectory editor"""
     # Initialize environment
     env = DuckietownEnv(
-        map_config="duckietown_simulator/assets/maps/simple_room.json",
+        map_config="../duckietown_simulator/assets/maps/simple_room.json",
         max_steps=1000,
         render_mode="human"
     )
@@ -346,7 +346,7 @@ def main():
         running = editor.handle_events(events)
         
         # Render
-        renderer.render()
+        renderer.render(flip=False)
         screen = renderer.screen
         
         # Render trajectory editor elements

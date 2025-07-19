@@ -5,7 +5,12 @@ Demonstrates the discrete action space {STOP, GO}.
 """
 
 import numpy as np
-from gym_pid_road_network import make_env
+import sys
+import os
+
+# Add parent directory to path to import from examples
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from examples.gym_pid_road_network import make_env
 
 
 def test_stop_go_actions():
@@ -14,7 +19,7 @@ def test_stop_go_actions():
     print("=" * 50)
     
     # Create environment
-    env = make_env(trajectory_file="trajectory_1.json", render_mode="human")
+    env = make_env(trajectory_file="data/trajectory_1.json", render_mode="human")
     
     print(f"Action space: {env.action_space}")
     print(f"  0: STOP (zero wheel speeds)")
@@ -79,7 +84,7 @@ def test_random_policy():
     print("Testing Random STOP/GO Policy")
     print("=" * 50)
     
-    env = make_env(trajectory_file="trajectory_1.json", render_mode="human")
+    env = make_env(trajectory_file="data/trajectory_1.json", render_mode="human")
     
     obs, info = env.reset()
     
