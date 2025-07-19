@@ -61,7 +61,7 @@ def test_human_render_basic():
                       f"reward={reward:.3f}, total={total_reward:.3f}, collision={collision}")
             
             # Small delay to make it watchable
-            time.sleep(0.05)  # 20 FPS
+            # time.sleep(0.05)  # 20 FPS
             
             if terminated or truncated:
                 print("Episode ended!")
@@ -151,7 +151,7 @@ def test_human_render_navigation():
                 print(f"Step {step_count}: distance={distance:.3f}, reward={total_reward:.3f}")
             
             # Small delay
-            time.sleep(0.05)
+            # time.sleep(0.05)
             
             # Stop if we reach the target
             if distance < 0.3:

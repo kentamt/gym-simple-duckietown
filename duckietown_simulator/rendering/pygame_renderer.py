@@ -530,8 +530,6 @@ class PygameRenderer:
             # Real Duckiebot is about 18cm long x 10cm wide
             robot_length = 0.18  # 18cm length
             robot_width = 0.10   # 10cm width
-            # robot_length *= 2.0  # 18cm length
-            # robot_width *= 2.0   # 10cm width
 
             # Convert to screen coordinates with minimum pixel size
             screen_length = max(12, self.world_distance_to_screen(robot_length))

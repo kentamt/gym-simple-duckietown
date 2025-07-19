@@ -56,7 +56,7 @@ def demo_text_rendering():
             
             # Pause to make it readable
             print("\n(Waiting 0.1 seconds...)")
-            time.sleep(0.01)
+            # time.sleep(0.01)
         
     except KeyboardInterrupt:
         print("\nDemo stopped by user")

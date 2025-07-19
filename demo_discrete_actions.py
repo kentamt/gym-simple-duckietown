@@ -115,7 +115,7 @@ def demo_discrete_actions():
                 break
             
             # Small delay for visualization
-            time.sleep(1./30.)
+            # time.sleep(1./30.)
             
     except KeyboardInterrupt:
         print("\nDemo stopped by user")

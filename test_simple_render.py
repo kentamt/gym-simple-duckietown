@@ -50,7 +50,7 @@ def test_simple_human_render():
             env.render()
             
             # Wait a bit so we can see the changes
-            time.sleep(1.0)
+            # time.sleep(1.0)
             
             if terminated or truncated:
                 print("Episode ended!")
@@ -95,7 +95,7 @@ def test_navigation_simple():
             env.render()
             
             # Wait to see changes
-            time.sleep(0.8)
+            # time.sleep(0.8)
             
             if terminated or truncated:
                 break

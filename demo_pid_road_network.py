@@ -16,6 +16,8 @@ from duckietown_simulator.world.map import create_map_from_array
 from duckietown_simulator.robot.duckiebot import create_duckiebot
 from duckietown_simulator.robot.pid_controller import WaypointFollowPIDController, PIDConfig, PIDGains
 from duckietown_simulator.rendering.pygame_renderer import create_pygame_renderer, RenderConfig
+from duckietown_simulator.world.collision_detection import CollisionDetector, CollisionResult
+from duckietown_simulator.world.obstacles import ObstacleConfig, ObstacleType
 
 
 def load_trajectory_from_file(filename, interpolate=True, interpolation_method='linear', **interpolation_kwargs):
@@ -358,6 +360,26 @@ def run_pid_demo(trajectory_files=None, interpolation_config=None):
     # Create map
     map_instance = create_road_network_map()
     
+    # Initialize collision detector
+    collision_detector = CollisionDetector(
+        map_width=map_instance.width_meters,
+        map_height=map_instance.height_meters
+    )
+    
+    # Add some test obstacles to make collisions more likely
+    # Add a circular obstacle in the center of the map
+    center_x = map_instance.width_meters / 2
+    center_y = map_instance.height_meters / 2
+    obstacle_config = ObstacleConfig(
+        x=center_x,
+        y=center_y,
+        obstacle_type=ObstacleType.CIRCLE,
+        radius=0.3,  # 30cm radius obstacle
+        name="center_obstacle"
+    )
+
+    # collision_detector.obstacle_manager.add_obstacle(obstacle_config)
+
     # Setup trajectories (either from files or defaults)
     trajectories = create_robot_trajectories(map_instance, trajectory_files, interpolation_config)
     
@@ -384,9 +406,13 @@ def run_pid_demo(trajectory_files=None, interpolation_config=None):
     
     renderer = create_pygame_renderer(map_instance, config)
     renderer.set_robots(robots)
+    renderer.set_obstacle_manager(collision_detector.obstacle_manager)
     
     # Set planned trajectories for visualization
     renderer.planned_trajectories = trajectories
+    
+    # Initialize collision tracking
+    collision_results = []
     
     print(f"Map: {map_instance.width_tiles}x{map_instance.height_tiles} tiles")
     print(f"Robots: {len(robots)} with PID controllers")
@@ -449,14 +475,43 @@ def run_pid_demo(trajectory_files=None, interpolation_config=None):
                     if len(robot_paths[robot_id]) > 300:  # Limit path length
                         robot_paths[robot_id].pop(0)
                 
-                # Update renderer trajectories
+                # Check for collisions after all robots have moved
+                collision_results = collision_detector.check_all_collisions(robots)
+                
+                # Handle collision responses
+                robots_in_collision = set()
+                for collision in collision_results:
+                    if collision.is_colliding:
+                        print(f"COLLISION: {collision.collision_type} - {collision.robot_id} "
+                              f"{'with ' + collision.other_robot_id if collision.other_robot_id else ''}"
+                              f"{'with ' + collision.obstacle_name if collision.obstacle_name else ''}")
+                        
+                        robots_in_collision.add(collision.robot_id)
+                        if collision.other_robot_id:
+                            robots_in_collision.add(collision.other_robot_id)
+                
+                # Apply collision response: stop robots in collision temporarily
+                for robot_id in robots.keys():
+                    if robot_id in controllers:
+                        controller = controllers[robot_id]
+                        if robot_id in robots_in_collision:
+                            # Stop the robot temporarily during collision
+                            robot_speeds[robot_id]['linear'] = 0.0
+                            robot_speeds[robot_id]['angular'] = 0.0
+                            robot_speeds[robot_id]['total'] = 0.0
+                        # Note: We're not applying the zero speeds to the actual control
+                        # This is just for display. In a real system, you'd implement
+                        # proper collision avoidance in the controller
+                
+                # Update renderer with trajectories and collision results
                 renderer.trajectories = robot_paths
+                renderer.set_collision_results(collision_results)
                 
                 step += 1
                 
                 # Print status periodically
                 if step % status_interval == 0:
-                    print(f"Step: {step}")
+                    print(f"Step: {step}, Collisions: {len([c for c in collision_results if c.is_colliding])}")
                     for robot_id in robots.keys():
                         if robot_id in controllers and robot_id in robot_speeds:
                             controller = controllers[robot_id]
@@ -465,15 +520,42 @@ def run_pid_demo(trajectory_files=None, interpolation_config=None):
                             print(f"  {robot_id}: waypoint {progress_info['current_waypoint']}/{progress_info['total_waypoints']}, "
                                   f"speed: {speed_info['linear']:.2f}m/s linear, {speed_info['angular']:.2f}rad/s angular")
             
-            # Draw speed overlays on screen
+            # Draw speed and collision overlays on screen
             if hasattr(renderer, 'screen') and hasattr(renderer, 'font'):
                 y_offset = 10
+                
+                # Draw collision summary
+                active_collisions = len([c for c in collision_results if c.is_colliding])
+                collision_text = f"Collisions: {active_collisions}"
+                collision_color = (255, 0, 0) if active_collisions > 0 else (0, 255, 0)
+                text_surface = renderer.font.render(collision_text, True, collision_color)
+                
+                # Add background for better readability
+                text_rect = text_surface.get_rect()
+                background_rect = text_rect.copy()
+                background_rect.width += 10
+                background_rect.height += 4
+                background_rect.x = 10
+                background_rect.y = y_offset
+                
+                pygame.draw.rect(renderer.screen, (0, 0, 0, 180), background_rect)
+                renderer.screen.blit(text_surface, (15, y_offset + 2))
+                y_offset += 30
+                
+                # Draw robot speeds
                 for robot_id, speed_info in robot_speeds.items():
                     robot = robots.get(robot_id)
                     if robot:
-                        # Create speed text
+                        # Check if robot is in collision
+                        robot_in_collision = any(c.is_colliding and c.robot_id == robot_id for c in collision_results)
+                        
+                        # Create speed text with collision indicator
                         speed_text = f"{robot_id}: {speed_info['linear']:.2f}m/s"
-                        text_surface = renderer.font.render(speed_text, True, (255, 255, 255))
+                        if robot_in_collision:
+                            speed_text += " [COLLISION]"
+                        
+                        text_color = (255, 255, 0) if robot_in_collision else (255, 255, 255)
+                        text_surface = renderer.font.render(speed_text, True, text_color)
                         
                         # Add background for better readability
                         text_rect = text_surface.get_rect()
